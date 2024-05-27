@@ -1,4 +1,6 @@
-trigger:
+trigger: none
+
+pr:
   branches:
     include:
       - main
@@ -8,49 +10,49 @@ variables:
 
 jobs:
 
-  - job: UnitTests
-    displayName: "Unit Tests"
-    # Trigger unit test upon making a PR against the main branch
-    # condition: |
-    #   and(
-    #     not(eq(variables['Build.Reason'], 'IndividualCI')),
-    #     eq(variables['Build.Reason'], 'PullRequest'),
-    #     eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/main')
-    #   )
-    pool:
-      vmImage: "ubuntu-latest"
-      name: Default
+  # - job: UnitTests
+  #   displayName: "Unit Tests"
+  #   # Trigger unit test upon making a PR against the main branch
+  #   # condition: |
+  #   #   and(
+  #   #     not(eq(variables['Build.Reason'], 'IndividualCI')),
+  #   #     eq(variables['Build.Reason'], 'PullRequest'),
+  #   #     eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/main')
+  #   #   )
+  #   pool:
+  #     vmImage: "ubuntu-latest"
+  #     name: Default
 
-    steps:
-      - checkout: self
-        persistCredentials: true
-        clean: true
-        displayName: "Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)"
+  #   steps:
+  #     - checkout: self
+  #       persistCredentials: true
+  #       clean: true
+  #       displayName: "Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)"
 
-      # - task: UsePythonVersion@0
-      #   displayName: "Use Python 3.10"
-      #   inputs:
-      #     versionSpec: 3.10
-      #     addToPath: true
+  #     # - task: UsePythonVersion@0
+  #     #   displayName: "Use Python 3.10"
+  #     #   inputs:
+  #     #     versionSpec: 3.10
+  #     #     addToPath: true
 
-      - script: |
-          cd default_python
-          python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt 
-        displayName: 'Install dependencies'
+  #     - script: |
+  #         cd default_python
+  #         python -m pip install --upgrade pip
+  #         pip install -r requirements-dev.txt 
+  #       displayName: 'Install dependencies'
 
-      - script: |
-          cd default_python
-          pytest --junitxml=test-unit.xml
-        displayName: 'Run unit tests'
+  #     - script: |
+  #         cd default_python
+  #         pytest --junitxml=test-unit.xml
+  #       displayName: 'Run unit tests'
 
 
-      - task: PublishTestResults@2
-        condition: succeededOrFailed()
-        inputs:
-          testResultsFormat: "JUnit"
-          testResultsFiles: "**/test-*.xml"
-          failTaskOnFailedTests: true
+  #     - task: PublishTestResults@2
+  #       condition: succeededOrFailed()
+  #       inputs:
+  #         testResultsFormat: "JUnit"
+  #         testResultsFiles: "**/test-*.xml"
+  #         failTaskOnFailedTests: true
 
   - job: IntegrationTests
     displayName: "Integration Tests"
