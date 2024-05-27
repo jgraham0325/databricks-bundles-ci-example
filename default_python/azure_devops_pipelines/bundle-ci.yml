@@ -59,15 +59,7 @@ jobs:
 
   - job: IntegrationTests
     displayName: "Integration Tests"
-    # Integration tests will only run upon unit tests successfully passing
-    # dependsOn: UnitTests
-    # condition: succeeded()
-    # condition: |
-    #   and(
-    #     not(eq(variables['Build.Reason'], 'IndividualCI')),
-    #     eq(variables['Build.Reason'], 'PullRequest'),
-    #     eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/main')
-    #   )
+
     pool:
       vmImage: "ubuntu-latest"
       name: Default
@@ -88,7 +80,7 @@ jobs:
           databricks version
         displayName: "Get Databricks CLI version"
 
-      # Clean up to test environment
+      # Clean up dev
       - script: |
           cd default_python
           if [ -f ".databricks/bundle/dev/terraform/terraform.tfstate" ]; then
@@ -101,9 +93,8 @@ jobs:
         env:
           DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
           DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
-          # DATABRICKS_HOST: $(DATABRICKS_HOST)
 
-      # Deploy to test environment
+      # Deploy to dev
       - script: |
           cd default_python
           databricks bundle deploy -t dev
@@ -111,17 +102,8 @@ jobs:
         env:
           DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
           DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
-          # DATABRICKS_HOST: $(DATABRICKS_HOST)
-      
-      # Run workflow in test environment
-      # - script: |
-      #     databricks bundle run -t tst Common_Requirements
-      #   displayName: "Run workflow"
-      #   env:
-      #     ARM_TENANT_ID: $(PBI-API-Audit-tenant-id)
-      #     ARM_CLIENT_ID: $(SP-DnA-Corporate-TST-DBW-clientid)
-      #     ARM_CLIENT_SECRET: $(SP-DnA-Corporate-TST-DBW)
 
+      # Run in dev
       - script: |
           cd default_python
           databricks bundle run -t dev default_python_job
@@ -129,4 +111,3 @@ jobs:
         env:
           DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
           DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
-          # DATABRICKS_HOST: $(DATABRICKS_HOST)
