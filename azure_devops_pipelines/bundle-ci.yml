@@ -27,11 +27,12 @@ jobs:
         clean: true
         displayName: "Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)"
 
-      - task: UsePythonVersion@0
-        displayName: "Use Python 3.10"
-        inputs:
-          versionSpec: 3.10
-          addToPath: true
+      # - task: UsePythonVersion@0
+      #   displayName: "Use Python 3.10"
+      #   inputs:
+      #     versionSpec: 3.10
+      #     addToPath: true
+
       - script: |
           cd default_python
           python -m pip install --upgrade pip
