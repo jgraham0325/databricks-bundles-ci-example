@@ -34,11 +34,13 @@ jobs:
       #     addToPath: true
 
       - script: |
+          cd default_python
           python -m pip install --upgrade pip
-          pip install -r ../requirements-dev.txt 
+          pip install -r requirements-dev.txt 
         displayName: 'Install dependencies'
 
       - script: |
+          cd default_python
           pytest --junitxml=test-unit.xml
         displayName: 'Run unit tests'
 
@@ -83,6 +85,7 @@ jobs:
 
       # Clean up to test environment
       - script: |
+          cd default_python
           if [ -f ".databricks/bundle/dev/terraform/terraform.tfstate" ]; then
               databricks bundle destroy --auto-approve -t dev
               else
@@ -97,6 +100,7 @@ jobs:
 
       # Deploy to test environment
       - script: |
+          cd default_python
           databricks bundle deploy -t dev
         displayName: "Create bundle files from dev environment"
         env:
@@ -114,6 +118,7 @@ jobs:
       #     ARM_CLIENT_SECRET: $(SP-DnA-Corporate-TST-DBW)
 
       - script: |
+          cd default_python
           databricks bundle run -t dev default_python_job
         displayName: "Run workflow"
         env:
