@@ -34,7 +34,7 @@ jobs:
       # Deploy
       - script: |
           cd default_python
-          databricks bundle deploy -t staging
+          databricks bundle deploy -t staging --force-lock
         displayName: "Deploy bundle to environment"
         env:
           DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
