@@ -1,6 +1,6 @@
 # bundle-examples
 
-This repository provides Databricks Asset Bundles examples.
+This repository provides Databricks Asset Bundles examples, with added CI/CD pipelines using Azure Devops
 
 To learn more, see:
 * The public preview announcement at 
