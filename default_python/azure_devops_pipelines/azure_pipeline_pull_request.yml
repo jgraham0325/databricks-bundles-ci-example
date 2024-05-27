@@ -89,7 +89,7 @@ jobs:
           DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
           DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
 
-      # Deploy to dev
+      # Deploy 
       - script: |
           cd default_python
           databricks bundle deploy -t dev
@@ -98,7 +98,7 @@ jobs:
           DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
           DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
 
-      # Run in dev
+      # Run 
       - script: |
           cd default_python
           databricks bundle run -t dev default_python_job

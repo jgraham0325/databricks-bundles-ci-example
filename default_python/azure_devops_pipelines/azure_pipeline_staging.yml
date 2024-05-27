@@ -3,62 +3,13 @@ trigger:
     include:
       - main
 
-pr:
-  branches:
-    include:
-      - main
-
 variables:
-  - group: dev-variable-group
+  - group: staging-variable-group
 
 jobs:
 
-  # - job: UnitTests
-  #   displayName: "Unit Tests"
-  #   # Trigger unit test upon making a PR against the main branch
-  #   # condition: |
-  #   #   and(
-  #   #     not(eq(variables['Build.Reason'], 'IndividualCI')),
-  #   #     eq(variables['Build.Reason'], 'PullRequest'),
-  #   #     eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/main')
-  #   #   )
-  #   pool:
-  #     vmImage: "ubuntu-latest"
-  #     name: Default
-
-  #   steps:
-  #     - checkout: self
-  #       persistCredentials: true
-  #       clean: true
-  #       displayName: "Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)"
-
-  #     # - task: UsePythonVersion@0
-  #     #   displayName: "Use Python 3.10"
-  #     #   inputs:
-  #     #     versionSpec: 3.10
-  #     #     addToPath: true
-
-  #     - script: |
-  #         cd default_python
-  #         python -m pip install --upgrade pip
-  #         pip install -r requirements-dev.txt 
-  #       displayName: 'Install dependencies'
-
-  #     - script: |
-  #         cd default_python
-  #         pytest --junitxml=test-unit.xml
-  #       displayName: 'Run unit tests'
-
-
-  #     - task: PublishTestResults@2
-  #       condition: succeededOrFailed()
-  #       inputs:
-  #         testResultsFormat: "JUnit"
-  #         testResultsFiles: "**/test-*.xml"
-  #         failTaskOnFailedTests: true
-
   - job: IntegrationTests
-    displayName: "Integration Tests"
+    displayName: "Deploy & Integration Tests"
 
     pool:
       vmImage: "ubuntu-latest"
@@ -80,33 +31,19 @@ jobs:
           databricks version
         displayName: "Get Databricks CLI version"
 
-      # Clean up dev
+      # Deploy
       - script: |
           cd default_python
-          if [ -f ".databricks/bundle/dev/terraform/terraform.tfstate" ]; then
-              databricks bundle destroy --auto-approve -t dev
-              else
-              echo "No resources to destroy. Skipping cleanup."
-              fi
-        displayName: "Clean up existing bundle files from dev environment"
-        continueOnError: true
+          databricks bundle deploy -t staging
+        displayName: "Deploy bundle to environment"
         env:
           DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
           DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
 
-      # Deploy to dev
+      # Run 
       - script: |
           cd default_python
-          databricks bundle deploy -t dev
-        displayName: "Create bundle files from dev environment"
-        env:
-          DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
-          DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
-
-      # Run in dev
-      - script: |
-          cd default_python
-          databricks bundle run -t dev default_python_job
+          databricks bundle run -t staging default_python_job
         displayName: "Run workflow"
         env:
           DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
