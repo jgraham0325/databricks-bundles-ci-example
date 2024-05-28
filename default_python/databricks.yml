@@ -7,6 +7,12 @@ bundle:
 include:
   - resources/*.yml
 
+# These are for any custom variables for use throughout the bundle.
+variables:
+  notifications_email_address:
+    description: Email address to send notifications to if a job fails
+    default: james.graham@databricks.com
+
 targets:
   # The 'dev' target, for development purposes. This target is the default.
   dev:

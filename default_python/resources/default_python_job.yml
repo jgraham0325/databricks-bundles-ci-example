@@ -7,11 +7,11 @@ resources:
       schedule:
         # Run every day at 8:37 AM
         quartz_cron_expression: '44 37 8 * * ?'
-        timezone_id: Europe/Amsterdam
+        timezone_id: UTC
 
       email_notifications:
         on_failure:
-          - james.graham@databricks.com
+          - {var.notifications_email_address}
 
       tasks:
         - task_key: notebook_task
