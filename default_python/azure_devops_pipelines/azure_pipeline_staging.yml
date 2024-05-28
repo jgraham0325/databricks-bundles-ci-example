@@ -36,23 +36,26 @@ jobs:
           pip install -r requirements-dev.txt
         displayName: "Install dependencies"
 
-      # Configure DB Connect
+      # Check DB Connect
       - script: |
-          echo "y
-          $(DATABRICKS_HOST)
-          $(DATABRICKS_TOKEN)
-          $(DATABRICKS_CLUSTER)
-          $(DATABRICKS_ORG_ID)
-          8787" | databricks-connect configure
           databricks-connect test
         env:
-          databricks-token: $(databricks-token)
-        displayName: "Configure DBConnect"
+          DATABRICKS_HOST: $(DATABRICKS_HOST)
+          DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
+          DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
+          DATABRICKS_CLUSTER_ID: $(DATABRICKS_CLUSTER_ID)
+        displayName: "Check DBConnect"
+          
 
       - script: |
           cd default_python
           pytest --junitxml=test-unit.xml
         displayName: "Run unit tests"
+        env:
+          DATABRICKS_HOST: $(DATABRICKS_HOST)
+          DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
+          DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
+          DATABRICKS_CLUSTER_ID: $(DATABRICKS_CLUSTER_ID)
 
       - task: PublishTestResults@2
         condition: succeededOrFailed()
