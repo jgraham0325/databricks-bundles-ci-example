@@ -11,7 +11,7 @@ resources:
 
       email_notifications:
         on_failure:
-          - {var.notifications_email_address}
+          - ${var.notifications_email_address}
 
       tasks:
         - task_key: notebook_task
