@@ -29,41 +29,6 @@ jobs:
           databricks version
         displayName: "Get Databricks CLI version"
 
-      # Install unit test dependencies
-      - script: |
-          cd default_python
-          python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
-        displayName: "Install dependencies"
-
-      # Check DB Connect
-      - script: |
-          databricks-connect test
-        env:
-          DATABRICKS_HOST: $(DATABRICKS_HOST)
-          DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
-          DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
-          DATABRICKS_CLUSTER_ID: $(DATABRICKS_CLUSTER_ID)
-        displayName: "Check DBConnect"
-          
-
-      - script: |
-          cd default_python
-          pytest --junitxml=test-unit.xml
-        displayName: "Run unit tests"
-        env:
-          DATABRICKS_HOST: $(DATABRICKS_HOST)
-          DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
-          DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
-          DATABRICKS_CLUSTER_ID: $(DATABRICKS_CLUSTER_ID)
-
-      - task: PublishTestResults@2
-        condition: succeededOrFailed()
-        inputs:
-          testResultsFormat: "JUnit"
-          testResultsFiles: "**/test-*.xml"
-          failTaskOnFailedTests: true
-
       # Validate
       - script: |
           cd default_python

@@ -9,50 +9,61 @@ variables:
   - group: dev-variable-group
 
 jobs:
+  - job: UnitTests
+    displayName: "Unit Tests"
 
-  # - job: UnitTests
-  #   displayName: "Unit Tests"
-  #   # Trigger unit test upon making a PR against the main branch
-  #   # condition: |
-  #   #   and(
-  #   #     not(eq(variables['Build.Reason'], 'IndividualCI')),
-  #   #     eq(variables['Build.Reason'], 'PullRequest'),
-  #   #     eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/main')
-  #   #   )
-  #   pool:
-  #     vmImage: "ubuntu-latest"
-  #     name: Default
+    pool:
+      vmImage: "ubuntu-latest"
 
-  #   steps:
-  #     - checkout: self
-  #       persistCredentials: true
-  #       clean: true
-  #       displayName: "Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)"
+    steps:
+      - checkout: self
+        persistCredentials: true
+        clean: true
+        displayName: "Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)"
 
-  #     # - task: UsePythonVersion@0
-  #     #   displayName: "Use Python 3.10"
-  #     #   inputs:
-  #     #     versionSpec: 3.10
-  #     #     addToPath: true
+      # Install Databricks CLI
+      - script: |
+          curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sudo sh
+        displayName: "Install Databricks CLI"
 
-  #     - script: |
-  #         cd default_python
-  #         python -m pip install --upgrade pip
-  #         pip install -r requirements-dev.txt 
-  #       displayName: 'Install dependencies'
+      # Extract Databricks version to test installation
+      - script: |
+          databricks version
+        displayName: "Get Databricks CLI version"
 
-  #     - script: |
-  #         cd default_python
-  #         pytest --junitxml=test-unit.xml
-  #       displayName: 'Run unit tests'
+      # Install unit test dependencies
+      - script: |
+          cd default_python
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+        displayName: "Install dependencies"
 
+      # Check DB Connect
+      - script: |
+          databricks-connect test
+        env:
+          DATABRICKS_HOST: $(DATABRICKS_HOST)
+          DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
+          DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
+          DATABRICKS_CLUSTER_ID: $(DATABRICKS_CLUSTER_ID)
+        displayName: "Check DBConnect"
 
-  #     - task: PublishTestResults@2
-  #       condition: succeededOrFailed()
-  #       inputs:
-  #         testResultsFormat: "JUnit"
-  #         testResultsFiles: "**/test-*.xml"
-  #         failTaskOnFailedTests: true
+      - script: |
+          cd default_python
+          pytest --junitxml=test-unit.xml
+        displayName: "Run unit tests"
+        env:
+          DATABRICKS_HOST: $(DATABRICKS_HOST)
+          DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
+          DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
+          DATABRICKS_CLUSTER_ID: $(DATABRICKS_CLUSTER_ID)
+
+      - task: PublishTestResults@2
+        condition: succeededOrFailed()
+        inputs:
+          testResultsFormat: "JUnit"
+          testResultsFiles: "**/test-*.xml"
+          failTaskOnFailedTests: true
 
   - job: IntegrationTests
     displayName: "Integration Tests"
@@ -99,7 +110,7 @@ jobs:
           DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
           DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
 
-      # Deploy 
+      # Deploy
       - script: |
           cd default_python
           databricks bundle deploy -t dev
@@ -109,7 +120,7 @@ jobs:
           DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
           BUNDLE_VAR_notifications_email_address: $(BUNDLE_VAR_notifications_email_address)
 
-      # Run 
+      # Run
       - script: |
           cd default_python
           databricks bundle run -t dev default_python_job
