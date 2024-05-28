@@ -7,7 +7,6 @@ variables:
   - group: staging-variable-group
 
 jobs:
-
   - job: IntegrationTests
     displayName: "Deploy & Integration Tests"
 
@@ -30,6 +29,38 @@ jobs:
           databricks version
         displayName: "Get Databricks CLI version"
 
+      # Install unit test dependencies
+      - script: |
+          cd default_python
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+        displayName: "Install dependencies"
+
+      # Configure DB Connect
+      - script: |
+          echo "y
+          $(DATABRICKS_HOST)
+          $(DATABRICKS_TOKEN)
+          $(DATABRICKS_CLUSTER)
+          $(DATABRICKS_ORG_ID)
+          8787" | databricks-connect configure
+          databricks-connect test
+        env:
+          databricks-token: $(databricks-token)
+        displayName: "Configure DBConnect"
+
+      - script: |
+          cd default_python
+          pytest --junitxml=test-unit.xml
+        displayName: "Run unit tests"
+
+      - task: PublishTestResults@2
+        condition: succeededOrFailed()
+        inputs:
+          testResultsFormat: "JUnit"
+          testResultsFiles: "**/test-*.xml"
+          failTaskOnFailedTests: true
+
       # Validate
       - script: |
           cd default_python
@@ -49,7 +80,7 @@ jobs:
           DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
           BUNDLE_VAR_notifications_email_address: $(BUNDLE_VAR_notifications_email_address)
 
-      # Run 
+      # Run
       - script: |
           cd default_python
           databricks bundle run -t staging default_python_job
