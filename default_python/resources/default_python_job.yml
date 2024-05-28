@@ -19,6 +19,7 @@ resources:
           notebook_task:
             notebook_path: ../src/notebook.ipynb
         
+        # COMMENTED OUT CALL TO DLT PIPELINE FOR SIMPLICITY
         # - task_key: refresh_pipeline
         #   depends_on:
         #     - task_key: notebook_task

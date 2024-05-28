@@ -4,14 +4,14 @@
 ## https://docs.databricks.com/dev-tools/bundles/library-dependencies.html
 
 ## Add code completion support for DLT
-databricks-dlt
+databricks-dlt==0.2.0
 
 ## pytest is the default package used for testing
-pytest
+pytest==8.2.1
 
 ## Dependencies for building wheel files
-setuptools
-wheel
+setuptools==70.0.0
+wheel==0.43.0
 
 ## databricks-connect can be used to run parts of this project locally.
 ## See https://docs.databricks.com/dev-tools/databricks-connect.html.

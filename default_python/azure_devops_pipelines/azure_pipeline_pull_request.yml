@@ -31,6 +31,15 @@ jobs:
           databricks version
         displayName: "Get Databricks CLI version"
 
+      # Cache pip packages
+      - task: Cache@2
+        inputs:
+          key: 'pip | "$(Agent.OS)" | default_python/requirements-dev.txt'
+          restoreKeys: |
+            pip | "$(Agent.OS)"
+          path: /home/vsts/.cache/pip
+        displayName: Cache pip packages
+
       # Install unit test dependencies
       - script: |
           cd default_python
@@ -38,25 +47,16 @@ jobs:
           pip install -r requirements-dev.txt
         displayName: "Install dependencies"
 
-      # Check DB Connect
-      - script: |
-          databricks-connect test
-        env:
-          DATABRICKS_HOST: $(DATABRICKS_HOST)
-          DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
-          DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
-          DATABRICKS_CLUSTER_ID: $(DATABRICKS_CLUSTER_ID)
-        displayName: "Check DBConnect"
-
       - script: |
           cd default_python
           pytest --junitxml=test-unit.xml
         displayName: "Run unit tests"
         env:
+          # Env vars needed for DBConnect to run code against a Databricks environment 
           DATABRICKS_HOST: $(DATABRICKS_HOST)
           DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
           DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
-          DATABRICKS_CLUSTER_ID: $(DATABRICKS_CLUSTER_ID)
+          DATABRICKS_CLUSTER_ID: $(DATABRICKS_CLUSTER_ID) # Runs against an interactive cluster
 
       - task: PublishTestResults@2
         condition: succeededOrFailed()
@@ -67,6 +67,7 @@ jobs:
 
   - job: IntegrationTests
     displayName: "Integration Tests"
+    dependsOn: UnitTests
 
     pool:
       vmImage: "ubuntu-latest"
