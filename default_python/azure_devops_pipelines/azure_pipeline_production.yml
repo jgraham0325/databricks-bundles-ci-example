@@ -38,7 +38,7 @@ jobs:
         env:
           DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
           DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
-
+          
       # Deploy
       - script: |
           cd default_python
@@ -47,3 +47,4 @@ jobs:
         env:
           DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
           DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
+          BUNDLE_VAR_notifications_email_address: $(BUNDLE_VAR_notifications_email_address)
