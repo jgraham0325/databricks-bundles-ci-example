@@ -30,6 +30,15 @@ jobs:
           databricks version
         displayName: "Get Databricks CLI version"
 
+      # Validate
+      - script: |
+          cd default_python
+          databricks bundle validate -t staging
+        displayName: "Validate bundle"
+        env:
+          DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
+          DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
+
       # Deploy
       - script: |
           cd default_python
