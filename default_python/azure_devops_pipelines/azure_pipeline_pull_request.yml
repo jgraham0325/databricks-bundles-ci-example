@@ -59,7 +59,6 @@ jobs:
 
     pool:
       vmImage: "ubuntu-latest"
-      name: Default
 
     steps:
       - checkout: self
@@ -68,9 +67,9 @@ jobs:
         displayName: "Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)"
 
       # Install Databricks CLI
-      # - script: |
-      #     curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sudo sh
-      #   displayName: "Install Databricks CLI"
+      - script: |
+          curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sudo sh
+        displayName: "Install Databricks CLI"
 
       # Extract Databricks version to test installation
       - script: |
