@@ -2,6 +2,8 @@
 
 This repository provides Databricks Asset Bundles examples, with added CI/CD pipelines using Azure Devops
 
+For more details, see the READMEs in each subfolder, e.g. [default_python README](./default_python/README.md)
+
 To learn more, see:
 * The public preview announcement at 
 https://www.databricks.com/blog/announcing-public-preview-databricks-asset-bundles-apply-software-development-best-practices
