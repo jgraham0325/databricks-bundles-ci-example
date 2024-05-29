@@ -12,9 +12,12 @@ variables:
   notifications_email_address:
     description: Email address to send notifications to if a job fails
     default: james.graham@databricks.com
+  pull_request_id:
+    description: ID of the pull request, only used for being able to independently test Pull Requests in parallel
+    default: "" # Can't set this to null, it results in failing validation
 
 targets:
-  # The 'dev' target, for development purposes. This target is the default.
+  # The 'dev' target, for development purposes. This target is the default. Also used by Pull Request CI pipeline
   dev:
     # We use 'mode: development' to indicate this is a personal development copy:
     # - Deployed resources get prefixed with '[dev my_user_name]'
@@ -31,7 +34,7 @@ targets:
       # Host would be a different environment in a real scenario
       host: https://e2-demo-field-eng.cloud.databricks.com/
       #  This would be in the shared workspace folder in a real scenario
-      root_path: /Workspace/Users/james.graham@databricks.com/.bundle/${bundle.name}/${bundle.target}
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
     # run_as:
     #   # This runs as user@company.com in production. We could also use a service principal here,
     #   # see https://docs.databricks.com/dev-tools/bundles/permissions.html.
@@ -47,7 +50,7 @@ targets:
       host: https://e2-demo-field-eng.cloud.databricks.com/
       # We always use /Users/user@company.com for all resources to make sure we only have a single copy.
       # If this path results in an error, please make sure you have a recent version of the CLI installed.
-      root_path: /Workspace/Users/james.graham@databricks.com/.bundle/${bundle.name}/${bundle.target}
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
     # run_as:
     #   # This runs as user@company.com in production. We could also use a service principal here,
     #   # see https://docs.databricks.com/dev-tools/bundles/permissions.html.

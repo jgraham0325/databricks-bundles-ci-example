@@ -9,8 +9,8 @@ variables:
   - group: dev-variable-group
 
 jobs:
-  - job: UnitTests
-    displayName: "Unit Tests"
+  - job: UnitAndIntegrationTests
+    displayName: "Unit & Integration Tests"
 
     pool:
       vmImage: "ubuntu-latest"
@@ -40,7 +40,7 @@ jobs:
           path: /home/vsts/.cache/pip
         displayName: Cache pip packages
 
-      # Install unit test dependencies
+      # Install test dependencies
       - script: |
           cd default_python
           python -m pip install --upgrade pip
@@ -65,9 +65,9 @@ jobs:
           testResultsFiles: "**/test-*.xml"
           failTaskOnFailedTests: true
 
-  - job: IntegrationTests
-    displayName: "Integration Tests"
-    dependsOn: UnitTests
+  - job: EndToEndTests
+    displayName: "End-to-end Tests"
+    dependsOn: UnitAndIntegrationTests
 
     pool:
       vmImage: "ubuntu-latest"
@@ -88,7 +88,7 @@ jobs:
           databricks version
         displayName: "Get Databricks CLI version"
 
-      # Validate
+      # Validate DAB
       - script: |
           cd default_python
           databricks bundle validate -t dev
@@ -110,8 +110,9 @@ jobs:
         env:
           DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
           DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
+          BUNDLE_VAR_pull_request_id: "_PR$(System.PullRequest.PullRequestId)"
 
-      # Deploy
+      # Deploy DAB
       - script: |
           cd default_python
           databricks bundle deploy -t dev
@@ -120,8 +121,9 @@ jobs:
           DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
           DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
           BUNDLE_VAR_notifications_email_address: $(BUNDLE_VAR_notifications_email_address)
+          BUNDLE_VAR_pull_request_id: "_PR$(System.PullRequest.PullRequestId)"
 
-      # Run
+      # Run DAB
       - script: |
           cd default_python
           databricks bundle run -t dev default_python_job
@@ -129,3 +131,4 @@ jobs:
         env:
           DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
           DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
+          BUNDLE_VAR_pull_request_id: "_PR$(System.PullRequest.PullRequestId)"

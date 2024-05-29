@@ -7,8 +7,8 @@ variables:
   - group: staging-variable-group
 
 jobs:
-  - job: IntegrationTests
-    displayName: "Deploy & Integration Tests"
+  - job: EndToEndTests
+    displayName: "Deploy & End-to-end Tests"
 
     pool:
       vmImage: "ubuntu-latest"

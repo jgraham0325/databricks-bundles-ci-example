@@ -2,7 +2,7 @@
 resources:
   jobs:
     default_python_job:
-      name: default_python_job_${bundle.environment}
+      name: default_python_job_${bundle.environment}${var.pull_request_id}
 
       schedule:
         # Run every day at 8:37 AM
