@@ -27,3 +27,32 @@ Description:
 7. (Optional) The engineer wants to release the code to the production environment, so creates a new Pull Request to merge all the code from the main branch into the release branch
 8. Once the Pull Request has been reviewed, it is completed and the code is merged into the release branch
 9. Azure Devopis Pipelines automatically triggers the Prod CI pipeline, deploying the DAB to production, this typically includes a scheduled trigger for the job to run at a given time
+
+
+## Creating a service principle to use with CI process
+1. Create a service principle in Azure Entra ID or in Databricks directly if you don't have SCIM set up. See https://learn.microsoft.com/en-us/azure/databricks/admin/users-groups/service-principals
+
+Alternatively, you can use a personal access token from Databricks instead. Change the environment variables in the pipeline files and Azure Devops variable group appropriately. 
+
+## Setting up environment specific variables/secrets
+1. Go to Azure Pipelines
+1. Click 'Library'
+1. Create new variable group
+1. Name it `dev-variable-group`
+1. Add the following variables:
+    - `BUNDLE_VAR_notifications_email_address` : Optional email address to use for failure notifications
+    - `DATABRICKS_CLIENT_ID` : Service Principle client id used to authenticate with Databricks
+    - `DATABRICKS_CLIENT_SECRET` : Service Principle secret use to authenticate with Databricks. Set this to secret to avoid it displaying in the UI
+    - `DATABRICKS_CLUSTER_ID` : Used by DBConnect to run automated tests against Databricks interactive cluster
+    - `DATABRICKS_HOST` : Databricks host used by CLI and tests, e.g. https://demo-workspace.cloud.databricks.com/
+1. Clone this variable group for staging and prod, call these `staging-variable-group` and `prod-variable-group`. Change values accordingly. 
+
+## Setting up Azure Pipelines
+1. Go to Azure Pipelines
+1. Click 'New Pipeline'
+1. Select Azure Repos Git and then this Git repo
+1. Select Existing Azure Pipelines YAML file
+1. Select main branch and default_python/azure_devops_pipelines/azure_pipeline_pull_request.yml
+1. Run pipeline
+1. Repeat steps for the staging and production CI pipelines
+
