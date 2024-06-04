@@ -132,3 +132,18 @@ jobs:
           DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
           DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
           BUNDLE_VAR_pull_request_id: "_PR$(System.PullRequest.PullRequestId)"
+
+      # Clean up dev, comment this out if you need to investigate an issue with a PR
+      - script: |
+          cd default_python
+          if [ -f ".databricks/bundle/dev/terraform/terraform.tfstate" ]; then
+              databricks bundle destroy --auto-approve -t dev
+              else
+              echo "No resources to destroy. Skipping cleanup."
+              fi
+        displayName: "Clean up existing bundle files from dev environment"
+        continueOnError: true
+        env:
+          DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
+          DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
+          BUNDLE_VAR_pull_request_id: "_PR$(System.PullRequest.PullRequestId)"
