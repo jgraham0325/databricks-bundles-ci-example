@@ -27,3 +27,4 @@ wheel==0.43.0
 ## for this project.
 #
 databricks-connect>=14.3,<14.5
+pytest-spark==0.6.0
