@@ -39,7 +39,7 @@ resources:
         #     # for more information on how to add other libraries.
         #     - whl: ../dist/*.whl
 
-# NOTE: Removed so serverless is used. Uncomment if running on a workspace that doesn't have serverless jobs
+# NOTE: Comment this out if using serverless. Current workspace isn't enabled for serverless
       # job_clusters:
       #   - job_cluster_key: job_cluster
       #     new_cluster:
