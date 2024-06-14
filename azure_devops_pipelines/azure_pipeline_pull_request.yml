@@ -17,7 +17,7 @@ variables:
     value: 'dab_project_2'
 
 jobs:
-  - job: CheckChanges
+  - job: CheckBundleChanges
     displayName: 'Check for changes in specific paths'
     steps:
     - checkout: self
@@ -43,7 +43,7 @@ jobs:
 
   - job: DeployBundle1Job
     displayName: 'Deploy Bundle 1'
-    dependsOn: CheckChanges
+    dependsOn: CheckBundleChanges
     condition: eq(dependencies.CheckChanges.outputs['CheckForChanges.BUNDLE1_CHANGED'], 'true')
     steps:
     # Install Databricks CLI
@@ -61,13 +61,14 @@ jobs:
         cd $(bundle_path_1)
         databricks bundle validate
         databricks bundle deploy -t dev
+      displayName: "Validate and deploy bundle"
       env:
         DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
         DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
 
   - job: DeployBundle2Job
     displayName: 'Deploy Bundle 2'
-    dependsOn: CheckChanges
+    dependsOn: CheckBundleChanges
     condition: eq(dependencies.CheckChanges.outputs['CheckForChanges.BUNDLE2_CHANGED'], 'true')
     steps:
     # Install Databricks CLI
@@ -85,6 +86,7 @@ jobs:
         cd $(bundle_path_2)
         databricks bundle validate
         databricks bundle deploy -t dev
+      displayName: "Validate and deploy bundle"
       env:
         DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
         DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
