@@ -67,7 +67,7 @@ jobs:
 
   - job: EndToEndTests
     displayName: "End-to-end Tests"
-    dependsOn: UnitAndIntegrationTests
+    # dependsOn: UnitAndIntegrationTests
 
     pool:
       vmImage: "ubuntu-latest"
