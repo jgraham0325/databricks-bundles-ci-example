@@ -1,0 +1,58 @@
+trigger:
+  branches:
+    include:
+      - main
+
+variables:
+  - group: staging-variable-group
+
+jobs:
+  - job: EndToEndTests
+    displayName: "Deploy & End-to-end Tests"
+
+    pool:
+      vmImage: "ubuntu-latest"
+
+    steps:
+      - checkout: self
+        persistCredentials: true
+        clean: true
+        displayName: "Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)"
+
+      # Install Databricks CLI
+      - script: |
+          curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sudo sh
+        displayName: "Install Databricks CLI"
+
+      # Extract Databricks version to test installation
+      - script: |
+          databricks version
+        displayName: "Get Databricks CLI version"
+
+      # Validate
+      - script: |
+          cd default_python
+          databricks bundle validate -t staging
+        displayName: "Validate bundle"
+        env:
+          DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
+          DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
+
+      # Deploy
+      - script: |
+          cd default_python
+          databricks bundle deploy -t staging --force-lock
+        displayName: "Deploy bundle to environment"
+        env:
+          DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
+          DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
+          BUNDLE_VAR_notifications_email_address: $(BUNDLE_VAR_notifications_email_address)
+
+      # Run
+      - script: |
+          cd default_python
+          databricks bundle run -t staging default_python_job
+        displayName: "Run workflow"
+        env:
+          DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
+          DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)

@@ -1,0 +1,227 @@
+trigger: none
+
+pr:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - default_python/*
+      - dab_project_2/*
+
+variables:
+  - group: dev-variable-group
+
+jobs:
+  - job: CheckChanges
+    displayName: 'Check for changes in specific paths'
+    steps:
+    - checkout: self
+      persistCredentials: true
+      clean: true
+      displayName: "Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)"
+    - script: |
+        echo "Checking for changes in bundle paths"
+        git fetch --unshallow
+        BUNDLE1_CHANGED=$(git diff --name-only HEAD HEAD~1 | grep -E '^default_python/')
+        BUNDLE2_CHANGED=$(git diff --name-only HEAD HEAD~1 | grep -E '^dab_project_2/')
+        if [ -n "$BUNDLE1_CHANGED" ]; then
+          echo "##vso[task.setvariable variable=BUNDLE1_CHANGED;isOutput=true]true"
+        else
+          echo "##vso[task.setvariable variable=BUNDLE1_CHANGED;isOutput=true]false"
+        fi
+        if [ -n "$BUNDLE2_CHANGED" ]; then
+          echo "##vso[task.setvariable variable=BUNDLE2_CHANGED;isOutput=true]true"
+        else
+          echo "##vso[task.setvariable variable=BUNDLE2_CHANGED;isOutput=true]false"
+        fi
+      name: CheckForChanges
+
+  - job: DeployBundle1Job
+    displayName: 'Deploy Bundle 1'
+    dependsOn: CheckChanges
+    condition: eq(dependencies.CheckChanges.outputs['CheckForChanges.BUNDLE1_CHANGED'], 'true')
+    steps:
+    # Install Databricks CLI
+    - script: |
+        curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sudo sh
+      displayName: "Install Databricks CLI"
+
+    # Extract Databricks version to test installation
+    - script: |
+        databricks version
+      displayName: "Get Databricks CLI version"
+
+    - script: |
+        echo "Deploying Bundle 1"
+        cd default_python
+        databricks bundle validate
+        databricks bundle deploy -t dev
+      env:
+        DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
+        DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
+
+  - job: DeployBundle2Job
+    displayName: 'Deploy Bundle 2'
+    dependsOn: CheckChanges
+    condition: eq(dependencies.CheckChanges.outputs['CheckForChanges.BUNDLE2_CHANGED'], 'true')
+    steps:
+    # Install Databricks CLI
+    - script: |
+        curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sudo sh
+      displayName: "Install Databricks CLI"
+
+    # Extract Databricks version to test installation
+    - script: |
+        databricks version
+      displayName: "Get Databricks CLI version"
+      
+    - script: |
+        echo "Deploying Bundle 2"
+        cd path/to/bundle2
+        databricks bundle validate
+        databricks bundle deploy -t dev
+      env:
+        DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
+        DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
+
+
+
+  # - job: UnitAndIntegrationTests
+  #   displayName: "Unit & Integration Tests"
+
+  #   pool:
+  #     vmImage: "ubuntu-latest"
+
+  #   steps:
+  #     - checkout: self
+  #       persistCredentials: true
+  #       clean: true
+  #       displayName: "Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)"
+
+  #     # Install Databricks CLI
+  #     - script: |
+  #         curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sudo sh
+  #       displayName: "Install Databricks CLI"
+
+  #     # Extract Databricks version to test installation
+  #     - script: |
+  #         databricks version
+  #       displayName: "Get Databricks CLI version"
+
+  #     # Cache pip packages
+  #     - task: Cache@2
+  #       inputs:
+  #         key: 'pip | "$(Agent.OS)" | default_python/requirements-dev.txt'
+  #         restoreKeys: |
+  #           pip | "$(Agent.OS)"
+  #         path: /home/vsts/.cache/pip
+  #       displayName: Cache pip packages
+
+  #     # Install test dependencies
+  #     - script: |
+  #         cd default_python
+  #         python -m pip install --upgrade pip
+  #         pip install -r requirements-dev.txt
+  #       displayName: "Install dependencies"
+
+  #     - script: |
+  #         cd default_python
+  #         pytest --junitxml=test-unit.xml
+  #       displayName: "Run unit tests"
+  #       env:
+  #         # Env vars needed for DBConnect to run code against a Databricks environment 
+  #         DATABRICKS_HOST: $(DATABRICKS_HOST)
+  #         DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
+  #         DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
+  #         DATABRICKS_CLUSTER_ID: $(DATABRICKS_CLUSTER_ID) # Runs against an interactive cluster
+
+  #     - task: PublishTestResults@2
+  #       condition: succeededOrFailed()
+  #       inputs:
+  #         testResultsFormat: "JUnit"
+  #         testResultsFiles: "**/test-*.xml"
+  #         failTaskOnFailedTests: true
+
+  - job: EndToEndTests
+    displayName: "End-to-end Tests"
+    # dependsOn: UnitAndIntegrationTests
+
+    pool:
+      vmImage: "ubuntu-latest"
+
+    steps:
+      - checkout: self
+        persistCredentials: true
+        clean: true
+        displayName: "Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)"
+
+      # Install Databricks CLI
+      - script: |
+          curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sudo sh
+        displayName: "Install Databricks CLI"
+
+      # Extract Databricks version to test installation
+      - script: |
+          databricks version
+        displayName: "Get Databricks CLI version"
+
+      # Validate DAB
+      - script: |
+          cd default_python
+          databricks bundle validate -t dev
+        displayName: "Validate bundle"
+        env:
+          DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
+          DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
+
+      # Clean up dev
+      - script: |
+          cd default_python
+          if [ -f ".databricks/bundle/dev/terraform/terraform.tfstate" ]; then
+              databricks bundle destroy --auto-approve -t dev
+              else
+              echo "No resources to destroy. Skipping cleanup."
+              fi
+        displayName: "Clean up existing bundle files from dev environment"
+        continueOnError: true
+        env:
+          DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
+          DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
+          BUNDLE_VAR_pull_request_id: "_PR$(System.PullRequest.PullRequestId)"
+
+      # Deploy DAB
+      - script: |
+          cd default_python
+          databricks bundle deploy -t dev
+        displayName: "Create bundle files from dev environment"
+        env:
+          DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
+          DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
+          BUNDLE_VAR_notifications_email_address: $(BUNDLE_VAR_notifications_email_address)
+          BUNDLE_VAR_pull_request_id: "_PR$(System.PullRequest.PullRequestId)"
+
+      # Run DAB
+      - script: |
+          cd default_python
+          databricks bundle run -t dev default_python_job
+        displayName: "Run workflow"
+        env:
+          DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
+          DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
+          BUNDLE_VAR_pull_request_id: "_PR$(System.PullRequest.PullRequestId)"
+
+      # Clean up dev, comment this out if you need to investigate an issue with a PR
+      - script: |
+          cd default_python
+          if [ -f ".databricks/bundle/dev/terraform/terraform.tfstate" ]; then
+              databricks bundle destroy --auto-approve -t dev
+              else
+              echo "No resources to destroy. Skipping cleanup."
+              fi
+        displayName: "Clean up existing bundle files from dev environment"
+        continueOnError: true
+        env:
+          DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
+          DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
+          BUNDLE_VAR_pull_request_id: "_PR$(System.PullRequest.PullRequestId)"
