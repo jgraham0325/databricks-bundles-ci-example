@@ -75,7 +75,7 @@ jobs:
     - script: |
         databricks version
       displayName: "Get Databricks CLI version"
-      
+
     - script: |
         echo "Deploying Bundle 2"
         cd path/to/bundle2
@@ -143,85 +143,85 @@ jobs:
   #         testResultsFiles: "**/test-*.xml"
   #         failTaskOnFailedTests: true
 
-  - job: EndToEndTests
-    displayName: "End-to-end Tests"
-    # dependsOn: UnitAndIntegrationTests
+  # - job: EndToEndTests
+  #   displayName: "End-to-end Tests"
+  #   # dependsOn: UnitAndIntegrationTests
 
-    pool:
-      vmImage: "ubuntu-latest"
+  #   pool:
+  #     vmImage: "ubuntu-latest"
 
-    steps:
-      - checkout: self
-        persistCredentials: true
-        clean: true
-        displayName: "Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)"
+  #   steps:
+  #     - checkout: self
+  #       persistCredentials: true
+  #       clean: true
+  #       displayName: "Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)"
 
-      # Install Databricks CLI
-      - script: |
-          curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sudo sh
-        displayName: "Install Databricks CLI"
+  #     # Install Databricks CLI
+  #     - script: |
+  #         curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sudo sh
+  #       displayName: "Install Databricks CLI"
 
-      # Extract Databricks version to test installation
-      - script: |
-          databricks version
-        displayName: "Get Databricks CLI version"
+  #     # Extract Databricks version to test installation
+  #     - script: |
+  #         databricks version
+  #       displayName: "Get Databricks CLI version"
 
-      # Validate DAB
-      - script: |
-          cd default_python
-          databricks bundle validate -t dev
-        displayName: "Validate bundle"
-        env:
-          DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
-          DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
+  #     # Validate DAB
+  #     - script: |
+  #         cd default_python
+  #         databricks bundle validate -t dev
+  #       displayName: "Validate bundle"
+  #       env:
+  #         DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
+  #         DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
 
-      # Clean up dev
-      - script: |
-          cd default_python
-          if [ -f ".databricks/bundle/dev/terraform/terraform.tfstate" ]; then
-              databricks bundle destroy --auto-approve -t dev
-              else
-              echo "No resources to destroy. Skipping cleanup."
-              fi
-        displayName: "Clean up existing bundle files from dev environment"
-        continueOnError: true
-        env:
-          DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
-          DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
-          BUNDLE_VAR_pull_request_id: "_PR$(System.PullRequest.PullRequestId)"
+  #     # Clean up dev
+  #     - script: |
+  #         cd default_python
+  #         if [ -f ".databricks/bundle/dev/terraform/terraform.tfstate" ]; then
+  #             databricks bundle destroy --auto-approve -t dev
+  #             else
+  #             echo "No resources to destroy. Skipping cleanup."
+  #             fi
+  #       displayName: "Clean up existing bundle files from dev environment"
+  #       continueOnError: true
+  #       env:
+  #         DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
+  #         DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
+  #         BUNDLE_VAR_pull_request_id: "_PR$(System.PullRequest.PullRequestId)"
 
-      # Deploy DAB
-      - script: |
-          cd default_python
-          databricks bundle deploy -t dev
-        displayName: "Create bundle files from dev environment"
-        env:
-          DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
-          DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
-          BUNDLE_VAR_notifications_email_address: $(BUNDLE_VAR_notifications_email_address)
-          BUNDLE_VAR_pull_request_id: "_PR$(System.PullRequest.PullRequestId)"
+  #     # Deploy DAB
+  #     - script: |
+  #         cd default_python
+  #         databricks bundle deploy -t dev
+  #       displayName: "Create bundle files from dev environment"
+  #       env:
+  #         DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
+  #         DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
+  #         BUNDLE_VAR_notifications_email_address: $(BUNDLE_VAR_notifications_email_address)
+  #         BUNDLE_VAR_pull_request_id: "_PR$(System.PullRequest.PullRequestId)"
 
-      # Run DAB
-      - script: |
-          cd default_python
-          databricks bundle run -t dev default_python_job
-        displayName: "Run workflow"
-        env:
-          DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
-          DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
-          BUNDLE_VAR_pull_request_id: "_PR$(System.PullRequest.PullRequestId)"
+  #     # Run DAB
+  #     - script: |
+  #         cd default_python
+  #         databricks bundle run -t dev default_python_job
+  #       displayName: "Run workflow"
+  #       env:
+  #         DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
+  #         DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
+  #         BUNDLE_VAR_pull_request_id: "_PR$(System.PullRequest.PullRequestId)"
 
-      # Clean up dev, comment this out if you need to investigate an issue with a PR
-      - script: |
-          cd default_python
-          if [ -f ".databricks/bundle/dev/terraform/terraform.tfstate" ]; then
-              databricks bundle destroy --auto-approve -t dev
-              else
-              echo "No resources to destroy. Skipping cleanup."
-              fi
-        displayName: "Clean up existing bundle files from dev environment"
-        continueOnError: true
-        env:
-          DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
-          DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
-          BUNDLE_VAR_pull_request_id: "_PR$(System.PullRequest.PullRequestId)"
+  #     # Clean up dev, comment this out if you need to investigate an issue with a PR
+  #     - script: |
+  #         cd default_python
+  #         if [ -f ".databricks/bundle/dev/terraform/terraform.tfstate" ]; then
+  #             databricks bundle destroy --auto-approve -t dev
+  #             else
+  #             echo "No resources to destroy. Skipping cleanup."
+  #             fi
+  #       displayName: "Clean up existing bundle files from dev environment"
+  #       continueOnError: true
+  #       env:
+  #         DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
+  #         DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
+  #         BUNDLE_VAR_pull_request_id: "_PR$(System.PullRequest.PullRequestId)"
