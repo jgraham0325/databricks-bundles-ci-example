@@ -15,9 +15,9 @@ resources:
 
       tasks:
         - task_key: notebook_task
-          existing_cluster_id: 0411-141519-d27z9097 # Use interactive cluster since it's already running
           notebook_task:
             notebook_path: ../src/notebook.ipynb
+          existing_cluster_id: 0411-141519-d27z9097 # Use interactive cluster since it's already running
         
         # COMMENTED OUT CALL TO DLT PIPELINE FOR SIMPLICITY
         # - task_key: refresh_pipeline
