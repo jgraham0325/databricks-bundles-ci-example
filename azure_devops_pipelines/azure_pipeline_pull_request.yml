@@ -47,7 +47,7 @@ jobs:
   - job: DeployBundle1Job
     displayName: 'Deploy Bundle 1'
     dependsOn: CheckBundleChanges
-    condition: eq(dependencies.CheckChanges.outputs['CheckForChanges.BUNDLE1_CHANGED'], 'true')
+    condition: eq(dependencies.CheckBundleChanges.outputs['CheckForChanges.BUNDLE1_CHANGED'], 'true')
     steps:
     # Install Databricks CLI
     - script: |
@@ -72,7 +72,7 @@ jobs:
   - job: DeployBundle2Job
     displayName: 'Deploy Bundle 2'
     dependsOn: CheckBundleChanges
-    condition: eq(dependencies.CheckChanges.outputs['CheckForChanges.BUNDLE2_CHANGED'], 'true')
+    condition: eq(dependencies.CheckBundleChanges.outputs['CheckForChanges.BUNDLE2_CHANGED'], 'true')
     steps:
     # Install Databricks CLI
     - script: |
