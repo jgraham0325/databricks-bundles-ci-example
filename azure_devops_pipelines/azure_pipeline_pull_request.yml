@@ -26,6 +26,7 @@ jobs:
       displayName: "Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)"
     - script: |
         echo "Checking for changes in bundle paths"
+        echo "BUNDLE1 var: $(bundle_path_1)"
         git fetch --unshallow
         BUNDLE1_CHANGED=$(git diff --name-only HEAD HEAD~1 | grep -E '^$(bundle_path_1)/')
         BUNDLE2_CHANGED=$(git diff --name-only HEAD HEAD~1 | grep -E '^$(bundle_path_2)/')
