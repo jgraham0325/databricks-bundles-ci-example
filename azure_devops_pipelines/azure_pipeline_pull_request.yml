@@ -31,11 +31,13 @@ jobs:
         BUNDLE2_CHANGED=$(git diff --name-only HEAD HEAD~1 | grep -E '^$(bundle_path_2)/')
         if [ -n "$BUNDLE1_CHANGED" ]; then
           echo "##vso[task.setvariable variable=BUNDLE1_CHANGED;isOutput=true]true"
+          echo "Bundle 1 changed"
         else
           echo "##vso[task.setvariable variable=BUNDLE1_CHANGED;isOutput=true]false"
         fi
         if [ -n "$BUNDLE2_CHANGED" ]; then
           echo "##vso[task.setvariable variable=BUNDLE2_CHANGED;isOutput=true]true"
+          echo "Bundle 2 changed"
         else
           echo "##vso[task.setvariable variable=BUNDLE2_CHANGED;isOutput=true]false"
         fi
