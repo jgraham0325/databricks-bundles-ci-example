@@ -42,7 +42,7 @@ jobs:
         else
           echo "##vso[task.setvariable variable=BUNDLE2_CHANGED;isOutput=true]false"
         fi
-      name: CheckForChanges
+      name: CheckForBundleChanges
 
   - job: DeployBundle1Job
     displayName: 'Deploy Bundle 1'
