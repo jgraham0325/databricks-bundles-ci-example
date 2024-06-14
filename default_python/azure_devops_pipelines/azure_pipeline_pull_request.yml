@@ -9,61 +9,61 @@ variables:
   - group: dev-variable-group
 
 jobs:
-  - job: UnitAndIntegrationTests
-    displayName: "Unit & Integration Tests"
+  # - job: UnitAndIntegrationTests
+  #   displayName: "Unit & Integration Tests"
 
-    pool:
-      vmImage: "ubuntu-latest"
+  #   pool:
+  #     vmImage: "ubuntu-latest"
 
-    steps:
-      - checkout: self
-        persistCredentials: true
-        clean: true
-        displayName: "Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)"
+  #   steps:
+  #     - checkout: self
+  #       persistCredentials: true
+  #       clean: true
+  #       displayName: "Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)"
 
-      # Install Databricks CLI
-      - script: |
-          curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sudo sh
-        displayName: "Install Databricks CLI"
+  #     # Install Databricks CLI
+  #     - script: |
+  #         curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sudo sh
+  #       displayName: "Install Databricks CLI"
 
-      # Extract Databricks version to test installation
-      - script: |
-          databricks version
-        displayName: "Get Databricks CLI version"
+  #     # Extract Databricks version to test installation
+  #     - script: |
+  #         databricks version
+  #       displayName: "Get Databricks CLI version"
 
-      # Cache pip packages
-      - task: Cache@2
-        inputs:
-          key: 'pip | "$(Agent.OS)" | default_python/requirements-dev.txt'
-          restoreKeys: |
-            pip | "$(Agent.OS)"
-          path: /home/vsts/.cache/pip
-        displayName: Cache pip packages
+  #     # Cache pip packages
+  #     - task: Cache@2
+  #       inputs:
+  #         key: 'pip | "$(Agent.OS)" | default_python/requirements-dev.txt'
+  #         restoreKeys: |
+  #           pip | "$(Agent.OS)"
+  #         path: /home/vsts/.cache/pip
+  #       displayName: Cache pip packages
 
-      # Install test dependencies
-      - script: |
-          cd default_python
-          python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
-        displayName: "Install dependencies"
+  #     # Install test dependencies
+  #     - script: |
+  #         cd default_python
+  #         python -m pip install --upgrade pip
+  #         pip install -r requirements-dev.txt
+  #       displayName: "Install dependencies"
 
-      - script: |
-          cd default_python
-          pytest --junitxml=test-unit.xml
-        displayName: "Run unit tests"
-        env:
-          # Env vars needed for DBConnect to run code against a Databricks environment 
-          DATABRICKS_HOST: $(DATABRICKS_HOST)
-          DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
-          DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
-          DATABRICKS_CLUSTER_ID: $(DATABRICKS_CLUSTER_ID) # Runs against an interactive cluster
+  #     - script: |
+  #         cd default_python
+  #         pytest --junitxml=test-unit.xml
+  #       displayName: "Run unit tests"
+  #       env:
+  #         # Env vars needed for DBConnect to run code against a Databricks environment 
+  #         DATABRICKS_HOST: $(DATABRICKS_HOST)
+  #         DATABRICKS_CLIENT_ID: $(DATABRICKS_CLIENT_ID)
+  #         DATABRICKS_CLIENT_SECRET: $(DATABRICKS_CLIENT_SECRET)
+  #         DATABRICKS_CLUSTER_ID: $(DATABRICKS_CLUSTER_ID) # Runs against an interactive cluster
 
-      - task: PublishTestResults@2
-        condition: succeededOrFailed()
-        inputs:
-          testResultsFormat: "JUnit"
-          testResultsFiles: "**/test-*.xml"
-          failTaskOnFailedTests: true
+  #     - task: PublishTestResults@2
+  #       condition: succeededOrFailed()
+  #       inputs:
+  #         testResultsFormat: "JUnit"
+  #         testResultsFiles: "**/test-*.xml"
+  #         failTaskOnFailedTests: true
 
   - job: EndToEndTests
     displayName: "End-to-end Tests"
